@@ -1,5 +1,5 @@
 # Baby Project Ktor POC
-this project was created to evaluate which is better for our use case, Spring Boot or Ktor
+The purpose of this POC is to evaluate Ktor and compare it to Spring Boot regarding our use case.
 ## Getting Started
 ### Docker
 (comming soon)!
