@@ -4,7 +4,8 @@ The purpose of this POC is to evaluate Ktor and compare it to Spring Boot regard
 ### Docker
 (comming soon)!
 ### Manual
-1. Install java 11 (we recommend [Jenv](https://www.jenv.be/))
+1. Install Java 11
+  - Pro Tip: To manage multiple versions of Java, you can use [Jenv](https://www.jenv.be/).
 1. run `./gradlew application:run`
 1. Open browser `http://localhost:8080`
 
