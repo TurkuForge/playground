@@ -1,6 +1,6 @@
 # Turku Forge – Playground
 
-This repository is for testing frameworks and libraries in the form of POCS to see if they are usable in a real project. Also, this is a great place for comparing the usefulness of technologies with respect to our use cases.
+This repository is for testing frameworks and libraries in the form of POCs to see if they are usable in a real project. Also, this is a great place for comparing the usefulness of technologies with respect to our use cases.
 
 ## Getting started
 
