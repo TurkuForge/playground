@@ -1,25 +1,12 @@
 import HelloWorld from "@/components/HelloWorld.vue";
 import { useApi } from "@/composables/useApi";
-import { mount } from "@vue/test-utils";
 import flushPromises from "flush-promises";
-import { defineComponent, h, Suspense } from "vue";
+import suspenseShallowMount, {FALLBACK_TEXT} from "./SuspenseShallowMount";
+import HelloWorldSubComponents from "@/components/HelloWorldSubComponents";
 
 jest.mock("@/composables/useApi", () => ({
   useApi: jest.fn(),
 }));
-
-const mountSuspense = (component, props) => {
-  return mount(
-    defineComponent({
-      render() {
-        return h(Suspense, null, {
-          default: h(component, props),
-          fallback: h("div", "fallback"),
-        });
-      },
-    })
-  );
-};
 
 describe("Home.vue", () => {
   useApi.mockResolvedValue({
@@ -30,9 +17,23 @@ describe("Home.vue", () => {
 
   it("renders props.msg when passed", async () => {
     const msg = "new message";
-    const wrapper = mountSuspense(HelloWorld, {
-      msg,
-    });
+    const wrapper = suspenseShallowMount( HelloWorld, { props: {msg} } );
+
+    expect(wrapper.text()).toMatch(FALLBACK_TEXT);
+    expect(wrapper.element).toMatchSnapshot();
+
+    await flushPromises();
+
+    expect(wrapper.element).toMatchSnapshot();
+    expect(wrapper.text()).toMatch(msg);
+  });
+
+  it('renders props.message and stubs out all other components', async () => {
+    const msg = "new message";
+    const wrapper = suspenseShallowMount( HelloWorldSubComponents, { props: {msg} } );
+
+    expect(wrapper.text()).toMatch(FALLBACK_TEXT);
+    expect(wrapper.element).toMatchSnapshot();
 
     await flushPromises();
 
