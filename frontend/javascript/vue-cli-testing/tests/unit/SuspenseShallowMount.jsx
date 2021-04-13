@@ -8,7 +8,7 @@ export default function suspenseShallowMount(component, mountArgs) {
             return (
                 <Suspense v-slots={{
                     default: () => h(component, mountArgs?.props),
-                    fallback: () => h('span', FALLBACK_TEXT)
+                    fallback: () => <span>{FALLBACK_TEXT}</span>
                 }}/>
             );
         }
