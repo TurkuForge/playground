@@ -1,27 +1,78 @@
-# Vue 3 + Typescript + Vite
+# Testing with Vite
 
-This template should help get you started developing with Vue 3 and Typescript in Vite.
+- [Testing with Vite](#testing-with-vite)
+  - [1. Adding Jest](#1-adding-jest)
+    - [Commands run](#commands-run)
+    - [Scripts run](#scripts-run)
+    - [Description](#description)
 
-## Recommended IDE Setup
+## 1. Adding Jest
 
-[VSCode](https://code.visualstudio.com/) + [Vetur](https://marketplace.visualstudio.com/items?itemName=octref.vetur). Make sure to enable `vetur.experimental.templateInterpolationService` in settings!
+### Commands run
 
-### If Using `<script setup>`
+```shell
+npm install --save-dev jest
+npx jest --init
+npm install --save-dev ts-node
+```
 
-[`<script setup>`](https://github.com/vuejs/rfcs/pull/227) is a feature that is currently in RFC stage. To get proper IDE support for the syntax, use [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) instead of Vetur (and disable Vetur).
+### Scripts run
 
-## Type Support For `.vue` Imports in TS
+```shell
+npm run test
+```
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can use the following:
+---
 
-### If Using Volar
+### Description
 
-Run `Volar: Switch TS Plugin on/off` from VSCode command palette.
+First and foremost, we add [Jest](https://jestjs.io/) as a `devDependency` with
 
-### If Using Vetur
+```shell
+npm i -D jest
+```
 
-1. Install and add `@vuedx/typescript-plugin-vue` to the [plugins section](https://www.typescriptlang.org/tsconfig#plugins) in `tsconfig.json`
-2. Delete `src/shims-vue.d.ts` as it is no longer needed to provide module info to Typescript
-3. Open `src/main.ts` in VSCode
-4. Open the VSCode command palette
-5. Search and run "Select TypeScript version" -> "Use workspace version"
+We can then add a basic configuration file to the root of the project and a `test` command to `scripts` in `package.json` by running
+
+```shell
+npx jest --init
+```
+
+We select the following features:
+
+![Chosen Jest features](./screenshots/1_adding_jest/chosen-jest-features.png)
+
+Trying to run `npm run test` results in this error:
+
+![Test script error](./screenshots/1_adding_jest/npm-run-test-error.png)
+
+Since we want to have the Jest configuration in Typescript file format, `jest.config.ts`, we do as the error text suggests and add [`ts-node`](https://github.com/TypeStrong/ts-node) with
+
+```shell
+npm i -D ts-node
+```
+
+Running the test script again negates the error, but fails since we no tests yet.
+
+![No tests](./screenshots/1_adding_jest/no-tests.png)
+
+We can now add a basic JavaScript file using CommonJS modules with a corresponding specification file to successfully run tests with Jest!
+
+```js
+// example.js
+function sum(a, b) {
+  return a + b;
+}
+module.exports = sum;
+```
+
+```js
+// example.spec.js
+const sum = require("./example.js");
+
+test("adds 1 + 2 to equal 3", () => {
+  expect(sum(1, 2)).toBe(3);
+});
+```
+
+![Test script success](./screenshots/1_adding_jest/npm-run-test-success.png)
