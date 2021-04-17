@@ -1,6 +1,6 @@
 # Testing with Vite
 
-- [1. Adding Jest](#1-adding-jest)
+- [1. Jest](#1-jest)
   - [Commands run](#commands-run)
   - [Scripts run](#scripts-run)
   - [Procedure](#procedure)
@@ -12,8 +12,12 @@
   - [Commands run](#commands-run-2)
   - [Scripts run](#scripts-run-2)
   - [Procedure](#procedure-2)
+- [4. Vue](#4-vue)
+  - [Commands run](#commands-run-3)
+  - [Scripts run](#scripts-run-3)
+  - [Procedure](#procedure-3)
 
-## 1. Adding Jest
+## 1. Jest
 
 ### Commands run
 
@@ -49,7 +53,7 @@ We select the following features:
 
 ![Chosen Jest features](./screenshots/1_adding_jest/chosen-jest-features.png)
 
-Trying to run `npm run test` results in this error:
+Trying to run `npm run test` results in the follow error:
 
 ![Test script error](./screenshots/1_adding_jest/npm-run-test-error.png)
 
@@ -98,7 +102,6 @@ npm install --save-dev babel-jest @babel/core @babel/preset-env
 
 ```shell
 npm run test
-
 ```
 
 ---
@@ -125,11 +128,10 @@ test("adds 1 + 2 to equal 3", () => {
 
 ![Unexpected token](./screenshots/2_es_modules/unexpected-token.png)
 
-We could change the [test script to use experimental ES Module features in Node.js](https://jestjs.io/docs/ecmascript-modules), but since we want to use [TypeScript](https://www.typescriptlang.org/) later on, we'll add [Babel](https://babeljs.io/) and configure it according to the instructions from Jest's documentation.
+We could change the [test script to use experimental ES Module features in Node.js](https://jestjs.io/docs/ecmascript-modules), but since we want to use [TypeScript](https://www.typescriptlang.org/) later on, we'll add [Babel](https://babeljs.io/) and configure it according to [the instructions from Jest's documentation](https://jestjs.io/docs/getting-started#using-babel).
 
 ```shell
 npm i -D babel-jest @babel/core @babel/preset-env
-
 ```
 
 ```js
@@ -191,7 +193,6 @@ To utilize the installed `@types/jest` package we'll add it to our `tsconfig.jso
 
 ```js
 // tsconfig.json
-
 {
   "compilerOptions": {
     //...
@@ -207,16 +208,14 @@ Next step is to tell Jest how to handle `.ts` files. We'll add a modified versio
 "\\.[jt]sx?$": "babel-jest"
 ```
 
-in `jest.config.ts` to still use [`babel-jest`](https://www.npmjs.com/package/babel-jest) for `.js`, `jsx` and `tsx` files. using ES Modules. For `.ts` files, we want to use `ts-jest`.
+in `jest.config.ts` to still use [`babel-jest`](https://www.npmjs.com/package/babel-jest) for `.js`, `jsx` and `tsx` files. For `.ts` files, we want to use `ts-jest`.
 
 ```ts
 // jest.config.ts
-
 export default {
   //...
   transform: {
-    "\\.jsx?$": "babel-jest",
-    "\\.tsx$": "babel-jest",
+    "\\.(jsx?|tsx)$": "babel-jest",
     "\\.ts$": "ts-jest",
   },
   //...
@@ -226,3 +225,134 @@ export default {
 The example Typescript specification now succeeds!
 
 ![Test script success](./screenshots/3_typescript/npm-run-test-success.png)
+
+## 4. Vue
+
+### Commands run
+
+```shell
+npm install --save-dev @vue/test-utils@next
+npm install --save-dev vue-jest@next
+```
+
+### Scripts run
+
+```shell
+npm run test
+```
+
+---
+
+### Procedure
+
+To run tests for `.vue` files, we'll install [Vue Test Utils](https://next.vue-test-utils.vuejs.org/) – the official unit testing utility library for Vue.js.
+
+```shell
+npm i -D @vue/test-utils@next
+```
+
+Trying to run an example specification straight away won't work since we're missing a way for Jest to load `.vue` files. We're also missing support for the common `@` alias used in Vue applications.
+
+```vue
+<!-- HelloWorld.vue -->
+<template>
+  <h1>{{ msg }}</h1>
+  <button @click="count++">count is: {{ count }}</button>
+  <Links />
+</template>
+
+<script lang="ts">
+import { ref, defineComponent } from "vue";
+import Links from "@/components/Links.vue";
+
+export default defineComponent({
+  name: "HelloWorld",
+  components: {
+    Links,
+  },
+  props: {
+    msg: {
+      type: String,
+      required: true,
+    },
+  },
+  setup: () => {
+    const count = ref(0);
+    return { count };
+  },
+});
+</script>
+```
+
+```ts
+// HelloWorld.spec.ts
+import HelloWorld from "@/components/HelloWorld.vue";
+import { mount } from "@vue/test-utils";
+
+describe("HelloWorld.vue", () => {
+  it("renders props.msg when passed", async () => {
+    const msg = "new message";
+    const wrapper = mount(HelloWorld, {
+      props: { msg },
+      global: {
+        stubs: ["Links"],
+      },
+    });
+
+    expect(wrapper.text()).toMatch(msg);
+
+    const button = wrapper.find("button");
+    await button.trigger("click");
+    expect(button.text()).toContain("1");
+
+    expect(wrapper.html()).toMatchInlineSnapshot(`
+      "<h1>new message</h1><button>count is: 1</button>
+      <links-stub></links-stub>"
+    `);
+  });
+});
+```
+
+![Alias error](./screenshots/4_vue/alias-error.png)
+
+Adding a regular expression–module name map to the `moduleNameMapper` option in `jest.config.ts` adds support for `@` aliases.
+
+```ts
+// jest.config.ts
+export default {
+  //...
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
+  //...
+};
+```
+
+Running `npm run test` still fails since we haven't added `.vue` support for Jest just yet.
+
+![Unexpected token](./screenshots/4_vue/unexpected-token.png)
+
+Adding [`vue-jest`](https://github.com/vuejs/vue-jest) and modifying the `transform` and `moduleFileExtensions` properties in `jest.config.ts` accordingly enables Jest to handle `.vue` files.
+
+```shell
+npm i -D vue-jest@next
+```
+
+```ts
+// jest.config.ts
+export default {
+  //...
+  moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node", "vue"],
+  //...
+  transform: {
+    "\\.(jsx?|tsx)$": "babel-jest",
+    "\\.ts$": "ts-jest",
+    "\\.vue$": "vue-jest",
+  },
+  //...
+};
+```
+
+We can now successfully test `.vue` files!
+
+![Test script success](./screenshots/4_vue/npm-run-test-success.png)

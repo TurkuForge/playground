@@ -71,17 +71,12 @@ export default {
   // ],
 
   // An array of file extensions your modules use
-  // moduleFileExtensions: [
-  //   "js",
-  //   "json",
-  //   "jsx",
-  //   "ts",
-  //   "tsx",
-  //   "node"
-  // ],
+  moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node", "vue"],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -173,9 +168,9 @@ export default {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "\\.jsx?$": "babel-jest",
-    "\\.tsx$": "babel-jest",
+    "\\.(jsx?|tsx)$": "babel-jest",
     "\\.ts$": "ts-jest",
+    "\\.vue$": "vue-jest",
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
