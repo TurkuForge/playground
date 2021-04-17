@@ -1,10 +1,13 @@
 # Testing with Vite
 
-- [Testing with Vite](#testing-with-vite)
-  - [1. Adding Jest](#1-adding-jest)
-    - [Commands run](#commands-run)
-    - [Scripts run](#scripts-run)
-    - [Description](#description)
+- [1. Adding Jest](#1-adding-jest)
+  - [Commands run](#commands-run)
+  - [Scripts run](#scripts-run)
+  - [Procedure](#procedure)
+- [2. ES Modules](#2-es-modules)
+  - [Commands run](#commands-run-1)
+  - [Scripts run](#scripts-run-1)
+  - [Procedure](#procedure-1)
 
 ## 1. Adding Jest
 
@@ -24,7 +27,7 @@ npm run test
 
 ---
 
-### Description
+### Procedure
 
 First and foremost, we add [Jest](https://jestjs.io/) as a `devDependency` with
 
@@ -76,3 +79,61 @@ test("adds 1 + 2 to equal 3", () => {
 ```
 
 ![Test script success](./screenshots/1_adding_jest/npm-run-test-success.png)
+
+---
+
+## 2. ES Modules
+
+### Commands run
+
+```shell
+npm install --save-dev babel-jest @babel/core @babel/preset-env
+npm install --save-dev @types/jest
+```
+
+### Scripts run
+
+```shell
+npm run test
+
+```
+
+### Procedure
+
+Running a test written with ES Modules produces the following error:
+
+```js
+// example.js
+export function sum(a, b) {
+  return a + b;
+}
+```
+
+```js
+// example.spec.js
+import { sum } from "./example.js";
+
+test("adds 1 + 2 to equal 3", () => {
+  expect(sum(1, 2)).toBe(3);
+});
+```
+
+![Unexpected token](./screenshots/2_es_modules/unexpected-token.png)
+
+We could change the [test script to use experimental ES Module features in Node.js](https://jestjs.io/docs/ecmascript-modules), but since we want to use [Typescript](https://www.typescriptlang.org/) later on, we'll add [Babel](https://babeljs.io/) and configure it according to the instructions from Jest's documentation.
+
+```shell
+npm i -D babel-jest @babel/core @babel/preset-env
+
+```
+
+```js
+// babel.config.js
+module.exports = {
+  presets: [["@babel/preset-env", { targets: { node: "current" } }]],
+};
+```
+
+Running `npm run test` now succeeds!
+
+![Test script success](./screenshots/2_es_modules/npm-run-test-success.png)
