@@ -1,3 +1,4 @@
+// example.spec.ts
 import { sum } from "./example";
 
 test("adds 1 + 2 to equal 3", () => {

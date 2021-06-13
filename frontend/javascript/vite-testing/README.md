@@ -16,6 +16,10 @@
   - [Commands run](#commands-run-3)
   - [Scripts run](#scripts-run-3)
   - [Procedure](#procedure-3)
+- [5. Experimental Vue](#5-experimental-vue)
+  - [Commands run](#commands-run-4)
+  - [Scripts run](#scripts-run-4)
+  - [Procedure](#procedure-4)
 
 ## 1. Jest
 
@@ -51,11 +55,11 @@ npx jest --init
 
 We select the following features:
 
-![Chosen Jest features](./screenshots/1_adding_jest/chosen-jest-features.png)
+![Chosen Jest features](./screenshots/1_jest/chosen-jest-features.png)
 
 Trying to run `npm run test` results in the follow error:
 
-![Test script error](./screenshots/1_adding_jest/npm-run-test-error.png)
+![Test script error](./screenshots/1_jest/npm-run-test-error.png)
 
 Since we want to have the Jest configuration in TypeScript file format, `jest.config.ts`, we do as the error text suggests and add [`ts-node`](https://github.com/TypeStrong/ts-node) with
 
@@ -65,28 +69,19 @@ npm i -D ts-node
 
 Running the test script again negates the error, but fails since we no tests yet.
 
-![No tests](./screenshots/1_adding_jest/no-tests.png)
+![No tests](./screenshots/1_jest/no-tests.png)
 
 We can now add a basic JavaScript file using CommonJS modules with a corresponding specification file to successfully run tests with Jest!
 
-```js
-// example.js
-function sum(a, b) {
-  return a + b;
-}
-module.exports = sum;
+```js:frontend/javascript/vite-testing/tests/unit/1_jest/example.js
+
 ```
 
-```js
-// example.spec.js
-const sum = require("./example");
+```js:frontend/javascript/vite-testing/tests/unit/1_jest/example.spec.js
 
-test("adds 1 + 2 to equal 3", () => {
-  expect(sum(1, 2)).toBe(3);
-});
 ```
 
-![Test script success](./screenshots/1_adding_jest/npm-run-test-success.png)
+![Test script success](./screenshots/1_jest/npm-run-test-success.png)
 
 ---
 
@@ -110,20 +105,12 @@ npm run test
 
 Running a test written with ES Modules produces the following error:
 
-```js
-// example.js
-export function sum(a, b) {
-  return a + b;
-}
+```js:frontend/javascript/vite-testing/tests/unit/2_es_modules/example.js
+
 ```
 
-```js
-// example.spec.js
-import { sum } from "./example";
+```js:frontend/javascript/vite-testing/tests/unit/2_es_modules/example.spec.js
 
-test("adds 1 + 2 to equal 3", () => {
-  expect(sum(1, 2)).toBe(3);
-});
 ```
 
 ![Unexpected token](./screenshots/2_es_modules/unexpected-token.png)
@@ -134,11 +121,8 @@ We could change the [test script to use experimental ES Module features in Node.
 npm i -D babel-jest @babel/core @babel/preset-env
 ```
 
-```js
-// babel.config.js
-module.exports = {
-  presets: [["@babel/preset-env", { targets: { node: "current" } }]],
-};
+```js:frontend/javascript/vite-testing/babel.config.js
+
 ```
 
 Running `npm run test` now succeeds!
@@ -165,20 +149,12 @@ npm run test
 
 Trying to run a TypeScript test results in the follow error:
 
-```ts
-// example.ts
-export function sum(a: number, b: number): number {
-  return a + b;
-}
+```ts:frontend/javascript/vite-testing/tests/unit/3_typescript/example.ts
+
 ```
 
-```ts
-// example.spec.ts
-import { sum } from "./example";
+```ts:frontend/javascript/vite-testing/tests/unit/3_typescript/example.spec.ts
 
-test("adds 1 + 2 to equal 3", () => {
-  expect(sum(1, 2)).toBe(3);
-});
 ```
 
 ![Syntax error](./screenshots/3_typescript/syntax-error.png)
@@ -191,32 +167,28 @@ npm i -D ts-jest @types/jest
 
 To utilize the installed `@types/jest` package we'll add it to our `tsconfig.json` file.
 
-```js
+```diff
 // tsconfig.json
 {
   "compilerOptions": {
     //...
-    "types": ["vite/client", "@types/jest"]
+-   "types": ["vite/client"]
++   "types": ["vite/client", "@types/jest"]
   }
   //...
 }
 ```
 
-Next step is to tell Jest how to handle `.ts` files. We'll add a modified version of the [default `transform` property](https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object)
+Next step is to tell Jest how to handle `.ts` files. We'll add a modified version of the [default `transform` property](https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object) in `jest.config.ts` to still use [`babel-jest`](https://www.npmjs.com/package/babel-jest) for `.js`, `jsx` and `tsx` files. For `.ts` files, we want to use `ts-jest`.
 
-```js
-"\\.[jt]sx?$": "babel-jest"
-```
-
-in `jest.config.ts` to still use [`babel-jest`](https://www.npmjs.com/package/babel-jest) for `.js`, `jsx` and `tsx` files. For `.ts` files, we want to use `ts-jest`.
-
-```ts
+```diff
 // jest.config.ts
 export default {
   //...
   transform: {
-    "\\.(jsx?|tsx)$": "babel-jest",
-    "\\.ts$": "ts-jest",
+-   "\\.[jt]sx?$": "babel-jest"
++   "\\.(jsx?|tsx)$": "babel-jest",
++   "\\.ts$": "ts-jest",
   },
   //...
 };
@@ -253,77 +225,26 @@ npm i -D @vue/test-utils@next
 
 Trying to run an example specification straight away won't work since we're missing a way for Jest to load `.vue` files. We're also missing support for the common `@` alias used in Vue applications.
 
-```vue
-<!-- HelloWorld.vue -->
-<template>
-  <h1>{{ msg }}</h1>
-  <button @click="count++">count is: {{ count }}</button>
-  <Links />
-</template>
+```vue:frontend/javascript/vite-testing/src/components/HelloWorld.vue
 
-<script lang="ts">
-import { ref, defineComponent } from "vue";
-import Links from "@/components/Links.vue";
-
-export default defineComponent({
-  name: "HelloWorld",
-  components: {
-    Links,
-  },
-  props: {
-    msg: {
-      type: String,
-      required: true,
-    },
-  },
-  setup: () => {
-    const count = ref(0);
-    return { count };
-  },
-});
-</script>
 ```
 
-```ts
-// HelloWorld.spec.ts
-import HelloWorld from "@/components/HelloWorld.vue";
-import { mount } from "@vue/test-utils";
+```ts:frontend/javascript/vite-testing/tests/unit/4_vue/HelloWorld.spec.ts
 
-describe("HelloWorld.vue", () => {
-  it("renders props.msg when passed", async () => {
-    const msg = "new message";
-    const wrapper = mount(HelloWorld, {
-      props: { msg },
-      global: {
-        stubs: ["Links"],
-      },
-    });
-
-    expect(wrapper.text()).toMatch(msg);
-
-    const button = wrapper.find("button");
-    await button.trigger("click");
-    expect(button.text()).toContain("1");
-
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<h1>new message</h1><button>count is: 1</button>
-      <links-stub></links-stub>"
-    `);
-  });
-});
 ```
 
 ![Alias error](./screenshots/4_vue/alias-error.png)
 
 Adding a regular expression–module name map to the `moduleNameMapper` option in `jest.config.ts` adds support for `@` aliases.
 
-```ts
+```diff
 // jest.config.ts
 export default {
   //...
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
-  },
+- // moduleNameMapper: {},
++ moduleNameMapper: {
++   "^@/(.*)$": "<rootDir>/src/$1",
++ },
   //...
 };
 ```
@@ -338,16 +259,24 @@ Adding [`vue-jest`](https://github.com/vuejs/vue-jest) and modifying the `transf
 npm i -D vue-jest@next
 ```
 
-```ts
+```diff
 // jest.config.ts
 export default {
   //...
-  moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node", "vue"],
+- // moduleFileExtensions: [
+- //   "js",
+- //   "json",
+- //   "jsx",
+- //   "ts",
+- //   "tsx",
+- //   "node"
+- // ],
++ moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node", "vue"],
   //...
   transform: {
     "\\.(jsx?|tsx)$": "babel-jest",
     "\\.ts$": "ts-jest",
-    "\\.vue$": "vue-jest",
++   "\\.vue$": "vue-jest",
   },
   //...
 };
@@ -356,3 +285,35 @@ export default {
 We can now successfully test `.vue` files!
 
 ![Test script success](./screenshots/4_vue/npm-run-test-success.png)
+
+## 5. Experimental Vue
+
+### Commands run
+
+```shell
+npm install --save-dev prettier
+```
+
+### Scripts run
+
+```shell
+npm run test
+```
+
+## Procedure
+
+Next, we'll try two main features currently in an experimental phase: [`<script setup>`](https://github.com/vuejs/rfcs/blob/sfc-improvements/active-rfcs/0000-sfc-script-setup.md) and [`<suspense>`](https://v3.vuejs.org/guide/migration/suspense.html#introduction).
+
+We'll start by adding a component utilizing these two features.
+
+```vue:frontend/javascript/vite-testing/src/components/Experimental.vue
+
+```
+
+Utilizing `<script setup>` lets us bypass some boilerplate. Using an `await` on the root level of the `<script>` tag effectively makes the component asynchronous, and as such, should be surrounded by a `<suspense>` component where it's rendered.
+
+The `useApi` function is quite trivial returning some predefined user data after a set delay.
+
+```ts:frontend/javascript/vite-testing/src/composables/useApi.ts
+
+```

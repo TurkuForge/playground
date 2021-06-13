@@ -1,3 +1,4 @@
+// example.spec.js
 import { sum } from "./example";
 
 test("adds 1 + 2 to equal 3", () => {
