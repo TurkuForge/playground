@@ -1,0 +1,32 @@
+name: Embed code within Markdown files
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  embed-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+          # The branch, tag or SHA to checkout.
+          # Since we're appending a commit, we need to reference the Git `HEAD` here.
+          ref: refs/heads/${{ github.head_ref }}
+
+      - name: Embed code within ${{ env.README_PATH }}
+        env:
+          README_PATH: frontend/javascript/vite-testing/README.md
+        uses: tokusumi/markdown-embed-code@main
+        with:
+          markdown: ${{ env.README_PATH }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          silent: true
+
